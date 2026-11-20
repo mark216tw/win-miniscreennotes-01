@@ -1,5 +1,31 @@
 # 開發日誌 (DEV_LOG)
 
+## 2026-11-20 - v1.0.21（啟動速度與常駐記憶體最佳化）
+
+### 目標
+提高應用程式冷／溫啟動速度，並大幅降低常駐系統匣及閒置時的電腦記憶體使用量。
+
+### 變更
+- `App.xaml.cs`：改用 `Host.CreateEmptyApplicationBuilder`（跳過設定檔監聽、環境變數掃描與預設日誌提供者）；啟動啟用 `ProfileOptimization`（Multicore JIT）；`--minimized` 模式延後建立 `ToolbarWindow`；一般啟動先顯示工具列再以 `DispatcherPriority.Loaded` 初始化系統匣、全域快捷鍵與滑鼠掛鉤；單一實例喚醒改用 `ThreadPool.RegisterWaitForSingleObject` 避免常駐占用執行緒；面板隱藏／背景常駐時排程執行工作集修剪。
+- `Models/AppConfigJsonContext.cs`、`Services/ConfigService.cs`：改用 `System.Text.Json` 原始碼產生器序列化與反序列化 `AppConfig`，免除啟動期反射中繼資料建置。
+- `Services/OverlayManager.cs`、`Views/OverlayWindow.xaml.cs`、`Views/MagnifierWindow.xaml.cs`、`Views/Controls/AnnotationCanvas.cs`：覆蓋層視窗改為按需建立（僅在面板顯示且使用標註／簡報工具、白黑板模式或存在可見標註時才建立），隱藏或閒置時關閉釋放全螢幕分層視窗並保留聚光燈半徑與放大鏡倍率／直徑；`AnnotationCanvas` 新增 `Detach()` 解除事件訂閱避免視窗外洩。
+- `Services/GlobalMouseHookService.cs`：改用 `GetModuleHandle(null)` 取代 `Process.GetCurrentProcess().MainModule`；新增 `Stop()`／`SetEnabled()`，面板隱藏或功能關閉時立即卸載 `WH_MOUSE_LL`。
+- `Services/ThemeService.cs`：記錄預設已載入的 `YellowEyeCare.Light`，避免啟動重複移除與重載同一主題字典。
+- `Services/TrayService.cs`：系統匣選單改於 `Opening` 事件才更新組態清單與開機自啟狀態，並確實釋放 `Stream`、`Icon` 與 `ContextMenuStrip`。
+- `Views/Controls/LaserOverlayLayer.cs`、`Views/Controls/SpotlightOverlayLayer.cs`：筆刷與畫筆改為靜態共用凍結物件，避免每螢幕重複建置與每幀配置。
+- `Helpers/Win32Interop.cs`、`Helpers/MemoryTrimHelper.cs`：新增 `SetProcessWorkingSetSize` 與去抖動閒置記憶體壓縮／工作集修剪工具。
+- `tests/MiniScreenNotes.Tests/OverlayManagerTests.cs`：新增覆蓋層按需建立／釋放條件單元測試。
+- 版本與文件：`Directory.Build.props`、`CHANGELOG.md`、`RELEASE_NOTES.md`。
+
+### 問題與解法
+- 啟動與常駐記憶體主要消耗在每個螢幕各建立一個全螢幕 `AllowsTransparency="True"` 分層視窗（即使處於游標模式、無任何標註或已隱藏至系統匣）→ 改為按需建立、隱藏／閒置即關閉釋放，並於 `AnnotationCanvas.Detach()` 解除 Singleton 事件訂閱防止記憶體外洩。
+- 常駐系統匣時 `WH_MOUSE_LL` 仍持續攔截全系統滑鼠事件，使行程頁面無法維持冷狀態 → 改為僅於面板可見且啟用中鍵切換時掛載掛鉤。
+
+### 待辦
+- 尚未於實體多螢幕／混合 DPI 環境以工作管理員量測實機冷啟動耗時與常駐工作集數值。
+
+---
+
 ## 2026-11-20 - v1.0.20（直向面板寬度與排列修正）
 
 ### 目標

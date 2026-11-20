@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Com.MiniScreenNotes.Helpers;
 using Microsoft.Extensions.Logging;
 using WpfApplication = System.Windows.Application;
@@ -22,6 +21,18 @@ public sealed class GlobalMouseHookService : IDisposable
     public Func<bool>? ShouldHandleMiddleClick { get; set; }
     public event EventHandler? MiddleButtonClicked;
 
+    public void SetEnabled(bool enabled)
+    {
+        if (enabled)
+        {
+            Start();
+        }
+        else
+        {
+            Stop();
+        }
+    }
+
     public void Start()
     {
         if (_disposed || _hookId != IntPtr.Zero)
@@ -29,14 +40,22 @@ public sealed class GlobalMouseHookService : IDisposable
             return;
         }
 
-        using var process = Process.GetCurrentProcess();
-        using var module = process.MainModule;
-        var moduleHandle = Win32Interop.GetModuleHandle(module?.ModuleName);
+        var moduleHandle = Win32Interop.GetModuleHandle(null);
         _hookId = Win32Interop.SetWindowsHookEx(Win32Interop.WhMouseLl, _hookProc, moduleHandle, 0);
 
         if (_hookId == IntPtr.Zero)
         {
             _logger.LogWarning("安裝全域滑鼠掛鉤失敗，滑鼠中鍵切換游標模式將無法運作。");
+        }
+    }
+
+    public void Stop()
+    {
+        _swallowNextMiddleUp = false;
+        if (_hookId != IntPtr.Zero)
+        {
+            _ = Win32Interop.UnhookWindowsHookEx(_hookId);
+            _hookId = IntPtr.Zero;
         }
     }
 
@@ -73,10 +92,6 @@ public sealed class GlobalMouseHookService : IDisposable
         }
 
         _disposed = true;
-        if (_hookId != IntPtr.Zero)
-        {
-            _ = Win32Interop.UnhookWindowsHookEx(_hookId);
-            _hookId = IntPtr.Zero;
-        }
+        Stop();
     }
 }

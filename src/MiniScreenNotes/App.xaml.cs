@@ -1,5 +1,8 @@
 using System.IO;
+using System.Runtime;
 using System.Windows;
+using System.Windows.Threading;
+using Com.MiniScreenNotes.Helpers;
 using Com.MiniScreenNotes.Resources.Strings;
 using Com.MiniScreenNotes.Services;
 using Com.MiniScreenNotes.ViewModels;
@@ -16,19 +19,24 @@ public partial class App : WpfApplication
 {
     private const string SingleInstanceMutexName = "Local\\Com.MiniScreenNotes.SingleInstance";
     private const string ActivateSignalName = "Local\\Com.MiniScreenNotes.ActivateSignal";
+    private static readonly TimeSpan IdleMemoryTrimDelay = TimeSpan.FromSeconds(2);
 
     private Mutex? _singleInstanceMutex;
     private EventWaitHandle? _activateEvent;
-    private CancellationTokenSource? _signalListenerCts;
+    private RegisteredWaitHandle? _activationWaitHandle;
+    private MemoryTrimHelper? _memoryTrimHelper;
     private IHost? _host;
 
     private ToolbarWindow? _toolbarWindow;
     private SettingsWindow? _settingsWindow;
     private AboutWindow? _aboutWindow;
     private ToastWindow? _toastWindow;
+    private bool _isToolbarVisible;
+    private bool _backgroundServicesInitialized;
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        EnableStartupProfileOptimization();
         base.OnStartup(e);
 
         try
@@ -57,44 +65,40 @@ public partial class App : WpfApplication
             return;
         }
 
-        _host = Host.CreateDefaultBuilder(e.Args)
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-#if DEBUG
-                logging.AddDebug();
-#endif
-                logging.SetMinimumLevel(LogLevel.Information);
-            })
-            .ConfigureServices(services =>
-            {
-                services.AddSingleton<ConfigService>();
-                services.AddSingleton<ThemeService>();
-                services.AddSingleton<StartupService>();
-                services.AddSingleton<AnnotationSession>();
-                services.AddSingleton<GlobalHotkeyService>();
-                services.AddSingleton<GlobalMouseHookService>();
-                services.AddSingleton<ScreenCaptureService>();
-                services.AddSingleton<OverlayManager>();
-                services.AddSingleton<TrayService>();
-                services.AddSingleton<ToolbarWindow>();
-                services.AddTransient<SettingsViewModel>();
-                services.AddTransient<SettingsWindow>();
-                services.AddTransient<AboutWindow>();
-            })
-            .Build();
+        var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings
+        {
+            DisableDefaults = true
+        });
 
-        _host.Start();
+        builder.Logging.ClearProviders();
+#if DEBUG
+        builder.Logging.AddDebug();
+#endif
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+        builder.Services.AddSingleton<ConfigService>();
+        builder.Services.AddSingleton<ThemeService>();
+        builder.Services.AddSingleton<StartupService>();
+        builder.Services.AddSingleton<AnnotationSession>();
+        builder.Services.AddSingleton<GlobalHotkeyService>();
+        builder.Services.AddSingleton<GlobalMouseHookService>();
+        builder.Services.AddSingleton<ScreenCaptureService>();
+        builder.Services.AddSingleton<OverlayManager>();
+        builder.Services.AddSingleton<TrayService>();
+        builder.Services.AddSingleton<ToolbarWindow>();
+        builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<SettingsWindow>();
+        builder.Services.AddTransient<AboutWindow>();
+
+        _host = builder.Build();
+        _memoryTrimHelper = new MemoryTrimHelper();
 
         var logger = _host.Services.GetRequiredService<ILogger<App>>();
         var configService = _host.Services.GetRequiredService<ConfigService>();
         var themeService = _host.Services.GetRequiredService<ThemeService>();
         var session = _host.Services.GetRequiredService<AnnotationSession>();
-        var hotkeyService = _host.Services.GetRequiredService<GlobalHotkeyService>();
-        var mouseHookService = _host.Services.GetRequiredService<GlobalMouseHookService>();
         var captureService = _host.Services.GetRequiredService<ScreenCaptureService>();
         var overlayManager = _host.Services.GetRequiredService<OverlayManager>();
-        var trayService = _host.Services.GetRequiredService<TrayService>();
 
         var activeProfile = configService.GetActiveProfile();
         themeService.ApplyTheme(activeProfile.Theme, activeProfile.DisplayMode);
@@ -106,6 +110,7 @@ public partial class App : WpfApplication
             {
                 var p = configService.GetActiveProfile();
                 themeService.ApplyTheme(p.Theme, p.DisplayMode);
+                SyncMouseHookState();
             });
         };
 
@@ -115,42 +120,13 @@ public partial class App : WpfApplication
         overlayManager.InfoMessageRequested += msg =>
             Dispatcher.Invoke(() => ShowToast(msg, null));
 
-        var startMinimized = e.Args.Any(a => a.Equals("--minimized", StringComparison.OrdinalIgnoreCase));
-
-        overlayManager.Initialize(!startMinimized);
-
-        _toolbarWindow = _host.Services.GetRequiredService<ToolbarWindow>();
-        _toolbarWindow.OpenSettingsRequested += (_, _) => OpenSettingsWindow();
-        _toolbarWindow.PanelVisibilityChanged += (_, isVisible) => overlayManager.SetOverlaysVisible(isVisible);
         overlayManager.ToolbarBoundsProvider = () => _toolbarWindow?.GetCurrentScreenDipBounds();
         overlayManager.TopMostZOrderRequired += (_, _) =>
             Dispatcher.Invoke(() => _toolbarWindow?.BringToTopMost());
 
-        hotkeyService.HotkeyPressed += (_, _) => Dispatcher.Invoke(() => _toolbarWindow.ToggleVisibility());
-        if (!hotkeyService.Register(configService.CurrentConfig.HotkeyModifiers, configService.CurrentConfig.HotkeyVirtualKey))
-        {
-            ShowToast(Strings.Toast_HotkeyFailed, null);
-        }
-
-        mouseHookService.ShouldHandleMiddleClick = () =>
-            configService.CurrentConfig.MiddleClickToggleEnabled
-            && _toolbarWindow is { IsVisible: true };
-        mouseHookService.MiddleButtonClicked += (_, _) => session.ToggleCursorMode();
-        mouseHookService.Start();
-
-        trayService.ToggleToolbarRequested += (_, _) => Dispatcher.Invoke(() => _toolbarWindow.ToggleVisibility());
-        trayService.OpenSettingsRequested += (_, _) => Dispatcher.Invoke(OpenSettingsWindow);
-        trayService.OpenAboutRequested += (_, _) => Dispatcher.Invoke(OpenAboutWindow);
-        trayService.ClearAllRequested += (_, _) => Dispatcher.Invoke(session.ClearAll);
-        trayService.ExitRequested += (_, _) => Dispatcher.Invoke(ExitApplication);
-        trayService.Initialize();
-
-        StartActivationListener();
-
-        if (!startMinimized)
-        {
-            _toolbarWindow.ShowAndRestorePosition();
-        }
+        var startMinimized = e.Args.Any(a => a.Equals("--minimized", StringComparison.OrdinalIgnoreCase));
+        _isToolbarVisible = !startMinimized;
+        overlayManager.Initialize(!startMinimized);
 
         DispatcherUnhandledException += (_, args) =>
         {
@@ -158,34 +134,116 @@ public partial class App : WpfApplication
             WriteCrashLog("Dispatcher", args.Exception);
             args.Handled = true;
         };
+
+        if (startMinimized)
+        {
+            InitializeBackgroundServices();
+            _memoryTrimHelper.ScheduleTrim(IdleMemoryTrimDelay);
+        }
+        else
+        {
+            EnsureToolbarWindow().ShowAndRestorePosition();
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, InitializeBackgroundServices);
+        }
+    }
+
+    private void InitializeBackgroundServices()
+    {
+        if (_backgroundServicesInitialized || _host is null)
+        {
+            return;
+        }
+
+        _backgroundServicesInitialized = true;
+
+        var configService = _host.Services.GetRequiredService<ConfigService>();
+        var session = _host.Services.GetRequiredService<AnnotationSession>();
+        var hotkeyService = _host.Services.GetRequiredService<GlobalHotkeyService>();
+        var mouseHookService = _host.Services.GetRequiredService<GlobalMouseHookService>();
+        var trayService = _host.Services.GetRequiredService<TrayService>();
+
+        hotkeyService.HotkeyPressed += (_, _) => Dispatcher.Invoke(ToggleToolbarVisibility);
+        if (!hotkeyService.Register(configService.CurrentConfig.HotkeyModifiers, configService.CurrentConfig.HotkeyVirtualKey))
+        {
+            ShowToast(Strings.Toast_HotkeyFailed, null);
+        }
+
+        mouseHookService.ShouldHandleMiddleClick = () =>
+            configService.CurrentConfig.MiddleClickToggleEnabled && _isToolbarVisible;
+        mouseHookService.MiddleButtonClicked += (_, _) => session.ToggleCursorMode();
+        SyncMouseHookState();
+
+        trayService.ToggleToolbarRequested += (_, _) => Dispatcher.Invoke(ToggleToolbarVisibility);
+        trayService.OpenSettingsRequested += (_, _) => Dispatcher.Invoke(OpenSettingsWindow);
+        trayService.OpenAboutRequested += (_, _) => Dispatcher.Invoke(OpenAboutWindow);
+        trayService.ClearAllRequested += (_, _) => Dispatcher.Invoke(session.ClearAll);
+        trayService.ExitRequested += (_, _) => Dispatcher.Invoke(ExitApplication);
+        trayService.Initialize();
+
+        StartActivationListener();
+    }
+
+    private ToolbarWindow EnsureToolbarWindow()
+    {
+        if (_toolbarWindow is not null)
+        {
+            return _toolbarWindow;
+        }
+
+        var overlayManager = _host!.Services.GetRequiredService<OverlayManager>();
+        _toolbarWindow = _host.Services.GetRequiredService<ToolbarWindow>();
+        _toolbarWindow.OpenSettingsRequested += (_, _) => OpenSettingsWindow();
+        _toolbarWindow.PanelVisibilityChanged += (_, isVisible) =>
+        {
+            _isToolbarVisible = isVisible;
+            overlayManager.SetOverlaysVisible(isVisible);
+            SyncMouseHookState();
+
+            if (isVisible)
+            {
+                _memoryTrimHelper?.CancelPendingTrim();
+            }
+            else
+            {
+                _memoryTrimHelper?.ScheduleTrim(IdleMemoryTrimDelay);
+            }
+        };
+
+        return _toolbarWindow;
+    }
+
+    private void ToggleToolbarVisibility()
+    {
+        EnsureToolbarWindow().ToggleVisibility();
+    }
+
+    private void SyncMouseHookState()
+    {
+        if (_host is null || !_backgroundServicesInitialized)
+        {
+            return;
+        }
+
+        var configService = _host.Services.GetRequiredService<ConfigService>();
+        var mouseHookService = _host.Services.GetRequiredService<GlobalMouseHookService>();
+        mouseHookService.SetEnabled(configService.CurrentConfig.MiddleClickToggleEnabled && _isToolbarVisible);
     }
 
     private void StartActivationListener()
     {
         _activateEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ActivateSignalName);
-        _signalListenerCts = new CancellationTokenSource();
-        var token = _signalListenerCts.Token;
-
-        _ = Task.Run(() =>
-        {
-            var handles = new WaitHandle[] { _activateEvent, token.WaitHandle };
-            try
+        _activationWaitHandle = ThreadPool.RegisterWaitForSingleObject(
+            _activateEvent,
+            (_, timedOut) =>
             {
-                while (!token.IsCancellationRequested)
+                if (!timedOut)
                 {
-                    if (WaitHandle.WaitAny(handles) != 0 || token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    Dispatcher.Invoke(() => _toolbarWindow?.ShowAndRestorePosition());
+                    Dispatcher.BeginInvoke(() => EnsureToolbarWindow().ShowAndRestorePosition());
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                // 應用程式關閉時事件已釋放
-            }
-        }, token);
+            },
+            state: null,
+            millisecondsTimeOutInterval: Timeout.Infinite,
+            executeOnlyOnce: false);
     }
 
     private static void TrySignalExistingInstance()
@@ -218,7 +276,14 @@ public partial class App : WpfApplication
         var themeService = _host.Services.GetRequiredService<ThemeService>();
         _settingsWindow.SourceInitialized += (_, _) => themeService.ApplyTitleBarTheme(_settingsWindow);
         _settingsWindow.OpenAboutRequested += (_, _) => OpenAboutWindow();
-        _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+        _settingsWindow.Closed += (_, _) =>
+        {
+            _settingsWindow = null;
+            if (!_isToolbarVisible)
+            {
+                _memoryTrimHelper?.ScheduleTrim(IdleMemoryTrimDelay);
+            }
+        };
         _settingsWindow.Show();
     }
 
@@ -238,7 +303,14 @@ public partial class App : WpfApplication
         _aboutWindow = _host.Services.GetRequiredService<AboutWindow>();
         var themeService = _host.Services.GetRequiredService<ThemeService>();
         _aboutWindow.SourceInitialized += (_, _) => themeService.ApplyTitleBarTheme(_aboutWindow);
-        _aboutWindow.Closed += (_, _) => _aboutWindow = null;
+        _aboutWindow.Closed += (_, _) =>
+        {
+            _aboutWindow = null;
+            if (!_isToolbarVisible)
+            {
+                _memoryTrimHelper?.ScheduleTrim(IdleMemoryTrimDelay);
+            }
+        };
         _aboutWindow.Show();
     }
 
@@ -264,8 +336,13 @@ public partial class App : WpfApplication
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _signalListenerCts?.Cancel();
+        _activationWaitHandle?.Unregister(null);
+        _activationWaitHandle = null;
         _activateEvent?.Dispose();
+        _activateEvent = null;
+
+        _memoryTrimHelper?.Dispose();
+        _memoryTrimHelper = null;
 
         if (_host is not null)
         {
@@ -274,12 +351,29 @@ public partial class App : WpfApplication
             _host.Services.GetService<GlobalHotkeyService>()?.Dispose();
             _host.Services.GetService<OverlayManager>()?.Dispose();
             _host.Services.GetService<TrayService>()?.Dispose();
-            _host.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+            _host.Services.GetService<ThemeService>()?.Dispose();
             _host.Dispose();
         }
 
         _singleInstanceMutex?.Dispose();
         base.OnExit(e);
+    }
+
+    private static void EnableStartupProfileOptimization()
+    {
+        try
+        {
+            var profileDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MiniScreenNotes");
+            Directory.CreateDirectory(profileDir);
+            ProfileOptimization.SetProfileRoot(profileDir);
+            ProfileOptimization.StartProfile("Startup.profile");
+        }
+        catch
+        {
+            // Multicore JIT 設定檔啟用失敗時忽略，不影響啟動
+        }
     }
 
     private static void WriteCrashLog(string stage, Exception ex)

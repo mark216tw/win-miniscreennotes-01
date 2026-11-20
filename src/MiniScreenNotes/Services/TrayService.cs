@@ -10,6 +10,8 @@ public sealed class TrayService : IDisposable
     private readonly ConfigService _configService;
     private readonly StartupService _startupService;
     private NotifyIcon? _notifyIcon;
+    private ContextMenuStrip? _contextMenu;
+    private Icon? _customIcon;
     private ToolStripMenuItem? _profilesMenu;
     private ToolStripMenuItem? _autoStartMenuItem;
 
@@ -17,7 +19,6 @@ public sealed class TrayService : IDisposable
     {
         _configService = configService;
         _startupService = startupService;
-        _configService.ConfigChanged += (_, _) => RefreshMenuState();
     }
 
     public event EventHandler? ToggleToolbarRequested;
@@ -33,8 +34,11 @@ public sealed class TrayService : IDisposable
             return;
         }
 
-        var icon = LoadAppIcon();
+        var (icon, ownsIcon) = LoadAppIcon();
+        _customIcon = ownsIcon ? icon : null;
         var menu = new ContextMenuStrip();
+        _contextMenu = menu;
+        menu.Opening += (_, _) => RefreshMenuState();
 
         var showHideItem = new ToolStripMenuItem(Strings.Tray_ShowHide);
         showHideItem.Click += (_, _) => ToggleToolbarRequested?.Invoke(this, EventArgs.Empty);
@@ -51,8 +55,7 @@ public sealed class TrayService : IDisposable
 
         _autoStartMenuItem = new ToolStripMenuItem(Strings.Tray_AutoStart)
         {
-            CheckOnClick = true,
-            Checked = _startupService.IsEnabled()
+            CheckOnClick = true
         };
         _autoStartMenuItem.Click += (_, _) =>
         {
@@ -98,8 +101,6 @@ public sealed class TrayService : IDisposable
                 ToggleToolbarRequested?.Invoke(this, EventArgs.Empty);
             }
         };
-
-        RefreshMenuState();
     }
 
     public void RefreshMenuState()
@@ -129,7 +130,7 @@ public sealed class TrayService : IDisposable
         }
     }
 
-    private static Icon LoadAppIcon()
+    private static (Icon Icon, bool OwnsIcon) LoadAppIcon()
     {
         try
         {
@@ -137,7 +138,8 @@ public sealed class TrayService : IDisposable
             var streamInfo = WpfApplication.GetResourceStream(uri);
             if (streamInfo?.Stream is not null)
             {
-                return new Icon(streamInfo.Stream);
+                using var stream = streamInfo.Stream;
+                return (new Icon(stream), true);
             }
         }
         catch
@@ -145,7 +147,7 @@ public sealed class TrayService : IDisposable
             // 回退系統預設圖示
         }
 
-        return SystemIcons.Application;
+        return (SystemIcons.Application, false);
     }
 
     public void Dispose()
@@ -153,8 +155,16 @@ public sealed class TrayService : IDisposable
         if (_notifyIcon is not null)
         {
             _notifyIcon.Visible = false;
+            _notifyIcon.ContextMenuStrip = null;
+            _notifyIcon.Icon = null;
             _notifyIcon.Dispose();
             _notifyIcon = null;
         }
+
+        _contextMenu?.Dispose();
+        _contextMenu = null;
+
+        _customIcon?.Dispose();
+        _customIcon = null;
     }
 }

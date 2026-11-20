@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Com.MiniScreenNotes.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,12 +9,6 @@ namespace Com.MiniScreenNotes.Services;
 public sealed class ConfigService : IDisposable
 {
     private const int SaveDebounceMilliseconds = 500;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() }
-    };
 
     private readonly ILogger<ConfigService> _logger;
     private readonly string _configFilePath;
@@ -138,7 +131,7 @@ public sealed class ConfigService : IDisposable
             }
 
             var tempPath = _configFilePath + ".tmp";
-            var json = JsonSerializer.Serialize(CurrentConfig, JsonOptions);
+            var json = JsonSerializer.Serialize(CurrentConfig, AppConfigJsonContext.Default.AppConfig);
             File.WriteAllText(tempPath, json);
             File.Move(tempPath, _configFilePath, overwrite: true);
         }
@@ -180,7 +173,7 @@ public sealed class ConfigService : IDisposable
             if (File.Exists(_configFilePath))
             {
                 var json = File.ReadAllText(_configFilePath);
-                var loaded = JsonSerializer.Deserialize<AppConfig>(json, JsonOptions);
+                var loaded = JsonSerializer.Deserialize(json, AppConfigJsonContext.Default.AppConfig);
                 if (loaded is not null)
                 {
                     EnsureValidProfiles(loaded);

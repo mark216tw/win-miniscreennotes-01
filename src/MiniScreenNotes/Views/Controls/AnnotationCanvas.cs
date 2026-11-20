@@ -28,6 +28,7 @@ public sealed class AnnotationCanvas : FrameworkElement
     private readonly HashSet<IAnnotationElement> _erasedBatch = [];
     private DrawingGroup? _committedCache;
     private bool _cacheDirty = true;
+    private bool _detached;
 
     public AnnotationCanvas(AnnotationSession session, string monitorId)
     {
@@ -37,16 +38,38 @@ public sealed class AnnotationCanvas : FrameworkElement
         IsHitTestVisible = true;
         ClipToBounds = true;
 
-        _session.ElementsChanged += (_, _) =>
-        {
-            _cacheDirty = true;
-            InvalidateVisual();
-        };
-        _session.StateChanged += (_, _) => InvalidateVisual();
+        _session.ElementsChanged += OnSessionElementsChanged;
+        _session.StateChanged += OnSessionStateChanged;
     }
 
     public event Action<Point>? TextInputRequested;
     public event Action? StepCounterReset;
+
+    public void Detach()
+    {
+        if (_detached)
+        {
+            return;
+        }
+
+        _detached = true;
+        _session.ElementsChanged -= OnSessionElementsChanged;
+        _session.StateChanged -= OnSessionStateChanged;
+        _committedCache = null;
+        _activeElement = null;
+        _erasedBatch.Clear();
+    }
+
+    private void OnSessionElementsChanged(object? sender, EventArgs e)
+    {
+        _cacheDirty = true;
+        InvalidateVisual();
+    }
+
+    private void OnSessionStateChanged(object? sender, EventArgs e)
+    {
+        InvalidateVisual();
+    }
 
     protected override void OnRender(DrawingContext dc)
     {

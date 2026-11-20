@@ -15,6 +15,9 @@ public sealed class OverlayManager : IDisposable
     private bool _overlaysVisible = true;
     private bool _disposed;
     private ToolType? _lastAppliedTopMostTool;
+    private double _spotlightRadius = 140.0;
+    private double _magnifierZoom = 2.5;
+    private double _magnifierDiameter = 300.0;
 
     public OverlayManager(AnnotationSession session)
     {
@@ -29,10 +32,21 @@ public sealed class OverlayManager : IDisposable
     public event EventHandler? TopMostZOrderRequired;
     public Func<System.Windows.Rect?>? ToolbarBoundsProvider { get; set; }
 
+    public static bool ShouldKeepOverlaysAlive(
+        bool overlaysVisible,
+        bool isCursorMode,
+        CanvasBackgroundMode backgroundMode,
+        bool annotationsVisible,
+        int elementCount) =>
+        overlaysVisible
+        && (!isCursorMode
+            || backgroundMode != CanvasBackgroundMode.Transparent
+            || (annotationsVisible && elementCount > 0));
+
     public void Initialize(bool initialVisible = true)
     {
         _overlaysVisible = initialVisible;
-        RebuildOverlays();
+        UpdateOverlayStates();
     }
 
     public void SetOverlaysVisible(bool visible)
@@ -46,29 +60,66 @@ public sealed class OverlayManager : IDisposable
         UpdateOverlayStates();
     }
 
-    private void RebuildOverlays()
+    private bool NeedsOverlays() =>
+        ShouldKeepOverlaysAlive(
+            _overlaysVisible,
+            _session.IsCursorMode,
+            _session.BackgroundMode,
+            _session.AnnotationsVisible,
+            _session.Elements.Count);
+
+    private void CreateOverlays()
     {
+        foreach (var monitor in DisplayMonitorHelper.GetAllMonitors())
+        {
+            var overlay = new OverlayWindow(_session, monitor, () => ToolbarBoundsProvider?.Invoke())
+            {
+                SpotlightRadius = _spotlightRadius
+            };
+            overlay.MagnifierWheelDelta += OnMagnifierWheelDelta;
+            overlay.MagnifierSizeWheelDelta += OnMagnifierSizeWheelDelta;
+            overlay.SpotlightRadiusChanged += OnSpotlightRadiusChanged;
+            overlay.StepCounterResetRequested += () => InfoMessageRequested?.Invoke(Strings.Toast_StepReset);
+            overlay.OverlayActivated += (_, _) => EnsureTopMostZOrder();
+            overlay.Show();
+            overlay.RefreshMonitorBounds();
+            _overlays.Add(overlay);
+        }
+    }
+
+    private void ReleaseOverlays()
+    {
+        ReleaseMagnifier();
+
+        if (_overlays.Count == 0)
+        {
+            return;
+        }
+
         foreach (var win in _overlays)
         {
             win.Close();
         }
         _overlays.Clear();
+    }
 
-        foreach (var monitor in DisplayMonitorHelper.GetAllMonitors())
+    private void ReleaseMagnifier()
+    {
+        if (_magnifier is null)
         {
-            var overlay = new OverlayWindow(_session, monitor, () => ToolbarBoundsProvider?.Invoke());
-            overlay.MagnifierWheelDelta += OnMagnifierWheelDelta;
-            overlay.MagnifierSizeWheelDelta += OnMagnifierSizeWheelDelta;
-            overlay.StepCounterResetRequested += () => InfoMessageRequested?.Invoke(Strings.Toast_StepReset);
-            overlay.OverlayActivated += (_, _) => EnsureTopMostZOrder();
-            if (_overlaysVisible)
-            {
-                overlay.Show();
-                overlay.RefreshMonitorBounds();
-            }
-            _overlays.Add(overlay);
+            return;
         }
 
+        _magnifierZoom = _magnifier.ZoomFactor;
+        _magnifierDiameter = _magnifier.LensDipDiameter;
+        _magnifier.Close();
+        _magnifier = null;
+    }
+
+    private void RebuildOverlaysIfNeeded()
+    {
+        ReleaseOverlays();
+        _lastAppliedTopMostTool = null;
         UpdateOverlayStates();
     }
 
@@ -80,28 +131,41 @@ public sealed class OverlayManager : IDisposable
     private void OnDisplaySettingsChanged(object? sender, EventArgs e)
     {
         DisplayMonitorHelper.InvalidateCache();
-        WpfApplication.Current?.Dispatcher.Invoke(RebuildOverlays);
+        WpfApplication.Current?.Dispatcher.Invoke(RebuildOverlaysIfNeeded);
+    }
+
+    private void OnSpotlightRadiusChanged(double radius)
+    {
+        _spotlightRadius = radius;
+        foreach (var overlay in _overlays)
+        {
+            overlay.SpotlightRadius = radius;
+        }
     }
 
     private void UpdateOverlayStates()
     {
-        if (!_overlaysVisible)
+        if (_disposed)
         {
-            _magnifier?.Stop();
-            foreach (var overlay in _overlays)
-            {
-                if (overlay.IsVisible)
-                {
-                    overlay.Hide();
-                }
-            }
+            return;
+        }
 
+        if (!NeedsOverlays())
+        {
+            ReleaseOverlays();
             _lastAppliedTopMostTool = null;
             return;
         }
 
         var tool = _session.CurrentTool;
         var anyOverlayShown = false;
+
+        if (_overlays.Count == 0)
+        {
+            CreateOverlays();
+            anyOverlayShown = _overlays.Count > 0;
+        }
+
         foreach (var overlay in _overlays)
         {
             if (!overlay.IsVisible)
@@ -116,12 +180,12 @@ public sealed class OverlayManager : IDisposable
 
         if (tool == ToolType.Magnifier)
         {
-            _magnifier ??= new MagnifierWindow();
+            _magnifier ??= new MagnifierWindow(_magnifierZoom, _magnifierDiameter);
             _magnifier.Start();
         }
         else
         {
-            _magnifier?.Stop();
+            ReleaseMagnifier();
         }
 
         // 僅在工具切換或覆蓋層重新顯示時重設 TopMost，避免每次狀態變更都對所有螢幕 SetWindowPos
@@ -164,13 +228,6 @@ public sealed class OverlayManager : IDisposable
         _session.StateChanged -= OnSessionStateChanged;
         SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
 
-        _magnifier?.Close();
-        _magnifier = null;
-
-        foreach (var overlay in _overlays)
-        {
-            overlay.Close();
-        }
-        _overlays.Clear();
+        ReleaseOverlays();
     }
 }

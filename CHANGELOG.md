@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.21] - 2026-11-20
+
+### Changed
+- 啟動改用輕量 `Host.CreateEmptyApplicationBuilder`，並啟用 Multicore JIT（`ProfileOptimization`）與 `System.Text.Json` 原始碼產生器（`AppConfigJsonContext`），加快啟動速度。
+- 啟動時跳過重複載入預設主題，並將系統匣、全域快捷鍵與單一實例喚醒移至工具列顯示後非同步初始化；`--minimized` 模式延後建立 `ToolbarWindow`。
+- 覆蓋層視窗（`OverlayWindow`）與放大鏡改為按需建立並在隱藏或閒置（游標模式且無可見標註與底色）時關閉釋放，大幅降低常駐記憶體使用量。
+- 面板隱藏或關閉中鍵切換時自動卸載低階滑鼠掛鉤（`WH_MOUSE_LL`），並以 `ThreadPool.RegisterWaitForSingleObject` 取代常駐等待執行緒。
+- 進入背景常駐（面板隱藏、`--minimized` 啟動或關閉設定／關於視窗且面板隱藏）時，延遲執行記憶體壓縮與工作集修剪（`MemoryTrimHelper`）。
+- 最佳化雷射筆／聚光燈筆刷資源為靜態共用凍結物件，並修正 `AnnotationCanvas` 與 `TrayService` 資源釋放。
+
 ## [1.0.20] - 2026-11-20
 
 ### Fixed

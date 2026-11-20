@@ -54,6 +54,7 @@ public partial class OverlayWindow : Window
 
         _laserLayer = new LaserOverlayLayer();
         _spotlightLayer = new SpotlightOverlayLayer();
+        _spotlightLayer.RadiusChanged += radius => SpotlightRadiusChanged?.Invoke(radius);
 
         Panel.SetZIndex(_canvas, 1);
         Panel.SetZIndex(_spotlightLayer, 10);
@@ -84,10 +85,25 @@ public partial class OverlayWindow : Window
 
     public MonitorInfo Monitor { get; }
 
+    public double SpotlightRadius
+    {
+        get => _spotlightLayer.Radius;
+        set => _spotlightLayer.Radius = value;
+    }
+
     public event Action<int>? MagnifierWheelDelta;
     public event Action<int>? MagnifierSizeWheelDelta;
+    public event Action<double>? SpotlightRadiusChanged;
     public event Action? StepCounterResetRequested;
     public event EventHandler? OverlayActivated;
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _laserLayer.IsActive = false;
+        _spotlightLayer.IsActive = false;
+        _canvas.Detach();
+        base.OnClosed(e);
+    }
 
     public void RefreshMonitorBounds()
     {

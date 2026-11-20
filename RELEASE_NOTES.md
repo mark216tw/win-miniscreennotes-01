@@ -1,13 +1,13 @@
-# mini螢幕筆記 v1.0.20 發行說明
+# mini螢幕筆記 v1.0.21 發行說明
 
-歡迎使用 **mini螢幕筆記** v1.0.20！
+歡迎使用 **mini螢幕筆記** v1.0.21！
 
 ## 下載
 
 | 平台 | 檔案 |
 | --- | --- |
-| x64（Intel／AMD） | `MiniScreenNotes-v1.0.20-win-x64.zip` |
-| ARM64（Windows on ARM） | `MiniScreenNotes-v1.0.20-win-arm64.zip` |
+| x64（Intel／AMD） | `MiniScreenNotes-v1.0.21-win-x64.zip` |
+| ARM64（Windows on ARM） | `MiniScreenNotes-v1.0.21-win-arm64.zip` |
 
 本版本提供**非 Self-Contained** 壓縮檔，不提供安裝程式。解壓縮後直接執行 `MiniScreenNotes.exe`。
 
@@ -23,6 +23,8 @@
 
 ## 本版重點
 
+- 顯著提升應用程式啟動速度：改用輕量 Host 建置器、JSON 原始碼產生器、Multicore JIT 預熱，並延後建立非立即需要的視窗與背景服務。
+- 顯著降低常駐系統匣與待機時的電腦記憶體使用量：全螢幕透明覆蓋視窗與放大鏡改為按需建立與即時釋放，隱藏時自動卸載滑鼠掛鉤並修剪工作集記憶體。
 - 修正直向面板啟動時寬度過寬的問題，現在第一次顯示就會使用正確寬度。
 - 修正直向面板工具超過每欄上限時平均分配到各欄的問題，改為第一欄填滿後才換下一欄。
 - 修正面板工具圖示未垂直／水平置中、被擠到左上角的問題。

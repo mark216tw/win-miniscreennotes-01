@@ -14,10 +14,10 @@ public sealed class LaserOverlayLayer : FrameworkElement
     private static readonly WpfBrush HaloBrush = CreateFrozenBrush(WpfColor.FromArgb(95, 239, 68, 68));
     private static readonly WpfBrush RedBrush = CreateFrozenBrush(WpfColor.FromRgb(239, 68, 68));
     private static readonly WpfBrush CoreBrush = CreateFrozenBrush(WpfColor.FromRgb(255, 255, 255));
+    private static WpfPen[]? s_glowPens;
+    private static WpfPen[]? s_corePens;
 
     private readonly List<(Point Position, DateTime Timestamp)> _trail = [];
-    private readonly WpfPen[] _glowPens = new WpfPen[PaletteSteps];
-    private readonly WpfPen[] _corePens = new WpfPen[PaletteSteps];
     private Point? _currentPointer;
     private bool _isActive;
     private bool _isRenderingHooked;
@@ -25,7 +25,6 @@ public sealed class LaserOverlayLayer : FrameworkElement
     public LaserOverlayLayer()
     {
         IsHitTestVisible = false;
-        BuildPenPalette();
     }
 
     public bool IsActive
@@ -82,16 +81,20 @@ public sealed class LaserOverlayLayer : FrameworkElement
         _trail.RemoveAll(p => (now - p.Timestamp).TotalSeconds > TrailLifetimeSeconds);
 
         // 繪製漸細漸透明的彗星拖尾
-        for (var i = 1; i < _trail.Count; i++)
+        if (_trail.Count > 1)
         {
-            var prev = _trail[i - 1];
-            var curr = _trail[i];
-            var age = (now - curr.Timestamp).TotalSeconds;
-            var lifeRatio = Math.Clamp(1.0 - (age / TrailLifetimeSeconds), 0.0, 1.0);
-            var paletteIndex = Math.Clamp((int)Math.Round(lifeRatio * (PaletteSteps - 1)), 0, PaletteSteps - 1);
+            var (glowPens, corePens) = GetPenPalettes();
+            for (var i = 1; i < _trail.Count; i++)
+            {
+                var prev = _trail[i - 1];
+                var curr = _trail[i];
+                var age = (now - curr.Timestamp).TotalSeconds;
+                var lifeRatio = Math.Clamp(1.0 - (age / TrailLifetimeSeconds), 0.0, 1.0);
+                var paletteIndex = Math.Clamp((int)Math.Round(lifeRatio * (PaletteSteps - 1)), 0, PaletteSteps - 1);
 
-            dc.DrawLine(_glowPens[paletteIndex], prev.Position, curr.Position);
-            dc.DrawLine(_corePens[paletteIndex], prev.Position, curr.Position);
+                dc.DrawLine(glowPens[paletteIndex], prev.Position, curr.Position);
+                dc.DrawLine(corePens[paletteIndex], prev.Position, curr.Position);
+            }
         }
 
         // 前端高亮雷射點
@@ -103,8 +106,16 @@ public sealed class LaserOverlayLayer : FrameworkElement
         }
     }
 
-    private void BuildPenPalette()
+    private static (WpfPen[] GlowPens, WpfPen[] CorePens) GetPenPalettes()
     {
+        if (s_glowPens is not null && s_corePens is not null)
+        {
+            return (s_glowPens, s_corePens);
+        }
+
+        var glowPens = new WpfPen[PaletteSteps];
+        var corePens = new WpfPen[PaletteSteps];
+
         for (var i = 0; i < PaletteSteps; i++)
         {
             var lifeRatio = (double)i / (PaletteSteps - 1);
@@ -120,7 +131,7 @@ public sealed class LaserOverlayLayer : FrameworkElement
                 EndLineCap = PenLineCap.Round
             };
             glowPen.Freeze();
-            _glowPens[i] = glowPen;
+            glowPens[i] = glowPen;
 
             var coreBrush = new SolidColorBrush(WpfColor.FromArgb(coreAlpha, 255, 220, 220));
             coreBrush.Freeze();
@@ -130,8 +141,12 @@ public sealed class LaserOverlayLayer : FrameworkElement
                 EndLineCap = PenLineCap.Round
             };
             corePen.Freeze();
-            _corePens[i] = corePen;
+            corePens[i] = corePen;
         }
+
+        s_glowPens = glowPens;
+        s_corePens = corePens;
+        return (glowPens, corePens);
     }
 
     private static WpfBrush CreateFrozenBrush(WpfColor color)

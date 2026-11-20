@@ -47,9 +47,12 @@ public partial class MagnifierWindow : Window
     private int _lastRenderedConfigVersion = -1;
     private long _lastFrameMs = -MinFrameIntervalMs;
 
-    public MagnifierWindow()
+    public MagnifierWindow(double initialZoom = 2.5, double initialDiameter = DefaultLensDipDiameter)
     {
         InitializeComponent();
+
+        _zoomFactor = Math.Clamp(initialZoom, MinZoom, MaxZoom);
+        _lensDipDiameter = Math.Clamp(initialDiameter, MinLensDipDiameter, MaxLensDipDiameter);
 
         SourceInitialized += (_, _) =>
         {
@@ -64,6 +67,7 @@ public partial class MagnifierWindow : Window
     }
 
     public double ZoomFactor => _zoomFactor;
+    public double LensDipDiameter => _lensDipDiameter;
 
     public void Start()
     {

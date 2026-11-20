@@ -12,8 +12,8 @@ public sealed class ThemeService : IDisposable
 {
     private const string ThemeDictionaryPrefix = "Resources/Themes/";
     private readonly ILogger<ThemeService> _logger;
-    private ThemeName? _appliedTheme;
-    private bool? _appliedDark;
+    private ThemeName? _appliedTheme = ThemeName.YellowEyeCare;
+    private bool? _appliedDark = false;
     private ThemeName _lastTheme;
     private DisplayMode _lastDisplayMode;
     private bool _hasApplied;

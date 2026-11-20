@@ -107,6 +107,13 @@ public static class Win32Interop
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     public static extern IntPtr GetModuleHandle(string? lpModuleName);
 
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetCurrentProcess();
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetProcessWorkingSetSize(IntPtr hProcess, nint dwMinimumWorkingSetSize, nint dwMaximumWorkingSetSize);
+
     [DllImport("user32.dll", SetLastError = true)]
     public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
@@ -312,5 +319,10 @@ public static class Win32Interop
             0,
             0,
             SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
+    }
+
+    public static void TrimWorkingSet()
+    {
+        _ = SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
     }
 }
