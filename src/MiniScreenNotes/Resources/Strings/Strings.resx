@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle" xml:space="preserve"><value>mini螢幕筆記</value></data>
+  <data name="Tool_Cursor" xml:space="preserve"><value>游標模式</value></data>
+  <data name="Tool_Pen" xml:space="preserve"><value>畫筆</value></data>
+  <data name="Tool_Highlighter" xml:space="preserve"><value>螢光筆</value></data>
+  <data name="Tool_Line" xml:space="preserve"><value>直線</value></data>
+  <data name="Tool_Arrow" xml:space="preserve"><value>箭頭</value></data>
+  <data name="Tool_HollowRectangle" xml:space="preserve"><value>空心矩形</value></data>
+  <data name="Tool_FilledRectangle" xml:space="preserve"><value>實心矩形</value></data>
+  <data name="Tool_HollowEllipse" xml:space="preserve"><value>空心橢圓</value></data>
+  <data name="Tool_FilledEllipse" xml:space="preserve"><value>實心橢圓</value></data>
+  <data name="Tool_CheckMark" xml:space="preserve"><value>綠色打勾</value></data>
+  <data name="Tool_CrossMark" xml:space="preserve"><value>紅色打叉</value></data>
+  <data name="Tool_Text" xml:space="preserve"><value>文字標註</value></data>
+  <data name="Tool_StepNumber" xml:space="preserve"><value>步驟編號</value></data>
+  <data name="Tool_Eraser" xml:space="preserve"><value>橡皮擦</value></data>
+  <data name="Tool_Laser" xml:space="preserve"><value>雷射筆</value></data>
+  <data name="Tool_Spotlight" xml:space="preserve"><value>聚光燈</value></data>
+  <data name="Tool_Magnifier" xml:space="preserve"><value>放大鏡</value></data>
+  <data name="Option_Color" xml:space="preserve"><value>顏色</value></data>
+  <data name="Option_StrokeWidth" xml:space="preserve"><value>線寬</value></data>
+  <data name="Action_ToggleVisibility" xml:space="preserve"><value>隱藏/顯示標註</value></data>
+  <data name="Action_Background" xml:space="preserve"><value>切換背景</value></data>
+  <data name="Action_Undo" xml:space="preserve"><value>復原</value></data>
+  <data name="Action_Redo" xml:space="preserve"><value>重做</value></data>
+  <data name="Action_Clear" xml:space="preserve"><value>清空</value></data>
+  <data name="Action_Copy" xml:space="preserve"><value>複製畫面</value></data>
+  <data name="Action_Save" xml:space="preserve"><value>儲存畫面</value></data>
+  <data name="Toolbar_Drag" xml:space="preserve"><value>拖曳面板</value></data>
+  <data name="Toolbar_Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Toolbar_Close" xml:space="preserve"><value>關閉面板</value></data>
+  <data name="Background_Transparent" xml:space="preserve"><value>透明</value></data>
+  <data name="Background_Whiteboard" xml:space="preserve"><value>白板</value></data>
+  <data name="Background_Blackboard" xml:space="preserve"><value>黑板</value></data>
+  <data name="Toast_Copied" xml:space="preserve"><value>已複製螢幕標註到剪貼簿</value></data>
+  <data name="Toast_Saved" xml:space="preserve"><value>已儲存至：</value></data>
+  <data name="Toast_StepReset" xml:space="preserve"><value>步驟編號已重設為 1</value></data>
+  <data name="Toast_CopyFailed" xml:space="preserve"><value>複製到剪貼簿失敗，請稍後再試</value></data>
+  <data name="Toast_SaveFailed" xml:space="preserve"><value>儲存失敗，請確認資料夾權限與磁碟空間</value></data>
+  <data name="Toast_HotkeyFailed" xml:space="preserve"><value>全域快捷鍵註冊失敗，可能已被其他程式占用，請至設定變更</value></data>
+  <data name="Tray_ShowHide" xml:space="preserve"><value>顯示 / 隱藏面板</value></data>
+  <data name="Tray_Profiles" xml:space="preserve"><value>切換面板組態</value></data>
+  <data name="Tray_ClearAll" xml:space="preserve"><value>清空所有標註</value></data>
+  <data name="Tray_AutoStart" xml:space="preserve"><value>開機自動啟動</value></data>
+  <data name="Tray_Settings" xml:space="preserve"><value>設定...</value></data>
+  <data name="Tray_About" xml:space="preserve"><value>關於 mini螢幕筆記</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>結束程式</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>mini螢幕筆記 - 設定</value></data>
+  <data name="About_Title" xml:space="preserve"><value>關於 mini螢幕筆記</value></data>
+  <data name="About_Privacy" xml:space="preserve"><value>本應用程式完全於本機離線運作，不蒐集或上傳任何螢幕截圖與使用者資料。</value></data>
+  <data name="About_License" xml:space="preserve"><value>MIT License</value></data>
+  <data name="Confirm_DeleteProfile" xml:space="preserve"><value>確定要刪除目前的面板組態嗎？</value></data>
+  <data name="Confirm_Title" xml:space="preserve"><value>確認操作</value></data>
+  <data name="Hotkey_NeedModifier" xml:space="preserve"><value>請至少勾選一個修飾鍵（Ctrl / Alt / Shift）。</value></data>
+  <data name="Hotkey_Applied" xml:space="preserve"><value>全域快捷鍵已套用生效。</value></data>
+  <data name="Hotkey_ApplyFailed" xml:space="preserve"><value>此快捷鍵已被其他應用程式佔用，請改選其他組合。</value></data>
+  <data name="Hotkey_ApplyFailedOldKept" xml:space="preserve"><value>此快捷鍵已被其他應用程式佔用；已保留原本的快捷鍵。</value></data>
+  <data name="Settings_MiddleClickToggle" xml:space="preserve"><value>面板顯示時，以滑鼠中鍵切換游標模式</value></data>
+  <data name="Tooltip_StepNumberHint" xml:space="preserve"><value>（右鍵可重設編號）</value></data>
+  <data name="Tooltip_AnnotationsVisible" xml:space="preserve"><value>標註目前顯示，點擊可隱藏</value></data>
+  <data name="Tooltip_AnnotationsHidden" xml:space="preserve"><value>標註目前隱藏，點擊可顯示</value></data>
+  <data name="HexColor_Invalid" xml:space="preserve"><value>色碼格式不正確，請輸入例如 #EF4444</value></data>
+  <data name="Toast_OpenFolderHint" xml:space="preserve"><value>點擊開啟資料夾</value></data>
+  <data name="Toast_QuickSaveFallback" xml:space="preserve"><value>快速儲存資料夾無法使用，已改用另存新檔。</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>關於</value></data>
+  <data name="About_Close" xml:space="preserve"><value>關閉</value></data>
+  <data name="About_SystemInfo" xml:space="preserve"><value>系統資訊</value></data>
+  <data name="About_Os" xml:space="preserve"><value>作業系統</value></data>
+  <data name="About_Architecture" xml:space="preserve"><value>系統架構</value></data>
+  <data name="About_Runtime" xml:space="preserve"><value>.NET 執行環境</value></data>
+  <data name="About_Displays" xml:space="preserve"><value>顯示器</value></data>
+  <data name="About_DataFolder" xml:space="preserve"><value>資料位置</value></data>
+  <data name="About_GlobalHotkey" xml:space="preserve"><value>全域快捷鍵</value></data>
+  <data name="About_Shortcuts" xml:space="preserve"><value>快捷鍵</value></data>
+  <data name="About_Shortcut_TogglePanel" xml:space="preserve"><value>顯示／隱藏浮動面板</value></data>
+  <data name="About_Shortcut_ToggleCursor" xml:space="preserve"><value>切換游標模式（面板顯示時）</value></data>
+  <data name="About_Shortcut_Undo" xml:space="preserve"><value>復原</value></data>
+  <data name="About_Shortcut_Redo" xml:space="preserve"><value>重做</value></data>
+  <data name="About_Shortcut_Copy" xml:space="preserve"><value>複製目前螢幕標註（面板聚焦時）</value></data>
+  <data name="About_Shortcut_Save" xml:space="preserve"><value>儲存目前螢幕標註（面板聚焦時）</value></data>
+  <data name="About_Shortcut_ClosePanel" xml:space="preserve"><value>收起面板（面板聚焦時）</value></data>
+  <data name="About_Shortcut_CursorMode" xml:space="preserve"><value>回到游標模式</value></data>
+  <data name="About_Shortcut_ConfirmText" xml:space="preserve"><value>確認文字輸入；Esc 取消</value></data>
+  <data name="About_Shortcut_Magnifier" xml:space="preserve"><value>放大鏡：滾輪調整倍率；Ctrl+滾輪調整鏡頭直徑</value></data>
+  <data name="About_Shortcut_Spotlight" xml:space="preserve"><value>聚光燈：滾輪調整光圈半徑</value></data>
+  <data name="About_Shortcut_StepNumber" xml:space="preserve"><value>步驟編號：右鍵重設編號</value></data>
+  <data name="About_VersionFormat" xml:space="preserve"><value>版本：{0}</value></data>
+  <data name="About_FileVersionFormat" xml:space="preserve"><value>檔案版本：{0}</value></data>
+  <data name="About_LicenseFormat" xml:space="preserve"><value>授權條款：{0}</value></data>
+  <data name="About_ArchitectureValue" xml:space="preserve"><value>{0}（處理程序：{1}）</value></data>
+  <data name="About_DisplayEntry" xml:space="preserve"><value>{0}：{1}×{2}，縮放 {3}%{4}</value></data>
+  <data name="About_PrimarySuffix" xml:space="preserve"><value>（主螢幕）</value></data>
+  <data name="About_HotkeyCustomizable" xml:space="preserve"><value>可於設定變更</value></data>
+  <data name="About_Key_MiddleMouse" xml:space="preserve"><value>滑鼠中鍵</value></data>
+  <data name="About_Key_RightMouse" xml:space="preserve"><value>滑鼠右鍵</value></data>
+  <data name="About_Key_Wheel" xml:space="preserve"><value>滾輪</value></data>
+  <data name="About_Key_WheelCtrl" xml:space="preserve"><value>滾輪／Ctrl+滾輪</value></data>
+</root>

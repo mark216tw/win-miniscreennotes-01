@@ -1,0 +1,28 @@
+<Window x:Class="Com.MiniScreenNotes.Views.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize">
+    <Grid x:Name="RootGrid">
+        <Canvas x:Name="TextInputLayer" Panel.ZIndex="20">
+            <TextBox x:Name="InlineTextBox"
+                     Visibility="Collapsed"
+                     AcceptsReturn="True"
+                     MinWidth="120"
+                     Padding="6,4"
+                     FontFamily="Microsoft JhengHei UI, Segoe UI"
+                     FontWeight="Bold"
+                     Background="#CC1E293B"
+                     BorderBrush="{DynamicResource AccentBrush}"
+                     BorderThickness="1.5"
+                     CaretBrush="White"
+                     KeyDown="InlineTextBox_KeyDown"
+                     LostKeyboardFocus="InlineTextBox_LostKeyboardFocus" />
+        </Canvas>
+    </Grid>
+</Window>

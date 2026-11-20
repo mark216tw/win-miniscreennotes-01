@@ -1,0 +1,52 @@
+<Window x:Class="Com.MiniScreenNotes.Views.MagnifierWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        ResizeMode="NoResize"
+        Width="324"
+        Height="324">
+    <Grid>
+        <Border x:Name="LensBorder"
+                Width="306"
+                Height="306"
+                CornerRadius="153"
+                BorderBrush="{DynamicResource AccentBrush}"
+                BorderThickness="3"
+                Background="#111827">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="14" ShadowDepth="2" Opacity="0.45" />
+            </Border.Effect>
+            <Grid>
+                <Image x:Name="LensImage"
+                       Stretch="Fill"
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                    <Image.Clip>
+                        <EllipseGeometry x:Name="LensClipGeometry" Center="150,150" RadiusX="150" RadiusY="150" />
+                    </Image.Clip>
+                </Image>
+                <!-- 中心準星 -->
+                <Line x:Name="CrosshairH" X1="142" Y1="150" X2="158" Y2="150" Stroke="#AAFFFFFF" StrokeThickness="1" />
+                <Line x:Name="CrosshairV" X1="150" Y1="142" X2="150" Y2="158" Stroke="#AAFFFFFF" StrokeThickness="1" />
+            </Grid>
+        </Border>
+
+        <!-- 倍率徽章 -->
+        <Border HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,14,14"
+                Padding="8,3"
+                CornerRadius="10"
+                Background="{DynamicResource AccentBrush}">
+            <TextBlock x:Name="ZoomBadgeText"
+                       Text="2.5x"
+                       FontSize="12"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource AccentForegroundBrush}" />
+        </Border>
+    </Grid>
+</Window>
