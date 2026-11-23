@@ -1,5 +1,42 @@
 # 開發日誌 (DEV_LOG)
 
+## 2026-11-23 - v1.0.23（修正放大鏡進場陰影閃現）
+
+### 目標
+修正以滑鼠中鍵由游標模式切換進入放大鏡時，鏡頭陰影會先在預設位置閃現一幀後消失的問題。
+
+### 變更
+- `Views/MagnifierWindow.xaml.cs`：`Start()` 於視窗原本隱藏時先設 `Opacity = 0` 再 `Show()`，待 `UpdateLens()` 完成擷取與 `SetWindowPos` 定位後才透過 `RevealIfReady()` 恢復為不透明；`OnCompositionTargetRendering` 亦在定位成功後才揭露；`Stop()` 清除待揭露狀態。
+- 版本與文件：`Directory.Build.props`、`CHANGELOG.md`、`RELEASE_NOTES.md`。
+
+### 問題與解法
+- 放大鏡每次進入皆重建視窗，`Show()` 當下尚未定位，會先以 WPF／OS 預設位置顯示一幀，帶 `DropShadowEffect` 的鏡頭陰影因此閃現後才被 `SetWindowPos` 移走 → 沿用 `ToolbarWindow.ShowAndRestorePosition()` 的「先透明顯示、定位完成再顯示」模式，以 `_pendingReveal` 旗標在首次成功定位（`_lastPhysLeft` 已設定）後才恢復 `Opacity`。
+
+### 待辦
+- 尚未於實體多螢幕／混合 DPI 環境實測中鍵來回切換與放大鏡進場動畫。
+
+---
+
+## 2026-11-23 - v1.0.22（Esc 改為回到游標模式）
+
+### 目標
+修正點擊浮動面板工具後按 `Esc` 會收起面板的問題；改為回到游標模式，並取消 `Esc` 收起面板的行為。
+
+### 變更
+- `Views/ToolbarWindow.xaml.cs`：`ToolbarWindow_PreviewKeyDown` 的 `Esc` 分支改為設定 `_session.IsCursorMode = true`（透過 `StateChanged` 自動同步按鈕狀態），保留先關閉顏色／線寬選單。
+- `Views/AboutWindow.xaml.cs`：移除 `Esc` 收起面板的快捷鍵說明列。
+- `Resources/Strings/Strings.resx`、`Strings.Designer.cs`：移除不再使用的 `About_Shortcut_ClosePanel`。
+- 文件：`README.md`、`docs/USER_GUIDE.md`、`CHANGELOG.md`、`RELEASE_NOTES.md` 同步新行為。
+- 版本與文件：`Directory.Build.props`。
+
+### 問題與解法
+- 點擊面板工具後鍵盤焦點留在面板，`Esc` 由 `ToolbarWindow` 的 `PreviewKeyDown` 處理並呼叫 `HideAndRememberPosition()`；覆蓋層的 `Esc`（已是回到游標模式）收不到按鍵 → 面板端的 `Esc` 改為同樣切回游標模式。
+
+### 待辦
+- 尚未實機驗證多螢幕與混合 DPI 下的操作流程。
+
+---
+
 ## 2026-11-20 - v1.0.21（啟動速度與常駐記憶體最佳化）
 
 ### 目標

@@ -91,7 +91,6 @@
   <data name="About_Shortcut_Redo" xml:space="preserve"><value>重做</value></data>
   <data name="About_Shortcut_Copy" xml:space="preserve"><value>複製目前螢幕標註（面板聚焦時）</value></data>
   <data name="About_Shortcut_Save" xml:space="preserve"><value>儲存目前螢幕標註（面板聚焦時）</value></data>
-  <data name="About_Shortcut_ClosePanel" xml:space="preserve"><value>收起面板（面板聚焦時）</value></data>
   <data name="About_Shortcut_CursorMode" xml:space="preserve"><value>回到游標模式</value></data>
   <data name="About_Shortcut_ConfirmText" xml:space="preserve"><value>確認文字輸入；Esc 取消</value></data>
   <data name="About_Shortcut_Magnifier" xml:space="preserve"><value>放大鏡：滾輪調整倍率；Ctrl+滾輪調整鏡頭直徑</value></data>

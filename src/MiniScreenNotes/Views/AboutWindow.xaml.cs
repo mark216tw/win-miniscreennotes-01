@@ -68,7 +68,6 @@ public partial class AboutWindow : Window
         new("Ctrl+Y", Strings.About_Shortcut_Redo),
         new("Ctrl+C", Strings.About_Shortcut_Copy),
         new("Ctrl+S", Strings.About_Shortcut_Save),
-        new("Esc", Strings.About_Shortcut_ClosePanel),
         new("Esc", Strings.About_Shortcut_CursorMode),
         new("Ctrl+Enter", Strings.About_Shortcut_ConfirmText),
         new(Strings.About_Key_WheelCtrl, Strings.About_Shortcut_Magnifier),

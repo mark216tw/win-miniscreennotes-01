@@ -1475,7 +1475,7 @@ public partial class ToolbarWindow : Window
                 return;
             }
 
-            HideAndRememberPosition();
+            _session.IsCursorMode = true;
             e.Handled = true;
             return;
         }

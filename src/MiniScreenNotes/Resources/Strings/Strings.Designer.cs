@@ -94,7 +94,6 @@ public static class Strings
     public static string About_Shortcut_Redo => Get(nameof(About_Shortcut_Redo));
     public static string About_Shortcut_Copy => Get(nameof(About_Shortcut_Copy));
     public static string About_Shortcut_Save => Get(nameof(About_Shortcut_Save));
-    public static string About_Shortcut_ClosePanel => Get(nameof(About_Shortcut_ClosePanel));
     public static string About_Shortcut_CursorMode => Get(nameof(About_Shortcut_CursorMode));
     public static string About_Shortcut_ConfirmText => Get(nameof(About_Shortcut_ConfirmText));
     public static string About_Shortcut_Magnifier => Get(nameof(About_Shortcut_Magnifier));

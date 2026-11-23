@@ -46,6 +46,7 @@ public partial class MagnifierWindow : Window
     private int _lensConfigVersion;
     private int _lastRenderedConfigVersion = -1;
     private long _lastFrameMs = -MinFrameIntervalMs;
+    private bool _pendingReveal;
 
     public MagnifierWindow(double initialZoom = 2.5, double initialDiameter = DefaultLensDipDiameter)
     {
@@ -75,8 +76,11 @@ public partial class MagnifierWindow : Window
         ApplyScalingMode();
         UpdateBadge();
 
+        // 先以透明狀態顯示並完成擷取與定位，避免第一幀閃現於預設位置的鏡頭陰影
         if (!IsVisible)
         {
+            Opacity = 0.0;
+            _pendingReveal = true;
             Show();
         }
 
@@ -103,6 +107,8 @@ public partial class MagnifierWindow : Window
 
         UpdateLens();
         BringToTopMost();
+
+        RevealIfReady();
     }
 
     public void Stop()
@@ -112,6 +118,8 @@ public partial class MagnifierWindow : Window
             _isRunning = false;
             CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
+
+        _pendingReveal = false;
 
         if (IsVisible)
         {
@@ -188,6 +196,18 @@ public partial class MagnifierWindow : Window
 
         _lastFrameMs = nowMs;
         UpdateLens();
+        RevealIfReady();
+    }
+
+    private void RevealIfReady()
+    {
+        if (!_pendingReveal || _lastPhysLeft == int.MinValue)
+        {
+            return;
+        }
+
+        _pendingReveal = false;
+        Opacity = 1.0;
     }
 
     private void ApplyScalingMode()
