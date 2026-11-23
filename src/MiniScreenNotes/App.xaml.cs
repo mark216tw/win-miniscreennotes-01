@@ -31,6 +31,7 @@ public partial class App : WpfApplication
     private SettingsWindow? _settingsWindow;
     private AboutWindow? _aboutWindow;
     private ToastWindow? _toastWindow;
+    private OverlayManager? _overlayManager;
     private bool _isToolbarVisible;
     private bool _backgroundServicesInitialized;
 
@@ -82,6 +83,7 @@ public partial class App : WpfApplication
         builder.Services.AddSingleton<AnnotationSession>();
         builder.Services.AddSingleton<GlobalHotkeyService>();
         builder.Services.AddSingleton<GlobalMouseHookService>();
+        builder.Services.AddSingleton<GlobalKeyboardHookService>();
         builder.Services.AddSingleton<ScreenCaptureService>();
         builder.Services.AddSingleton<OverlayManager>();
         builder.Services.AddSingleton<TrayService>();
@@ -99,6 +101,7 @@ public partial class App : WpfApplication
         var session = _host.Services.GetRequiredService<AnnotationSession>();
         var captureService = _host.Services.GetRequiredService<ScreenCaptureService>();
         var overlayManager = _host.Services.GetRequiredService<OverlayManager>();
+        _overlayManager = overlayManager;
 
         var activeProfile = configService.GetActiveProfile();
         themeService.ApplyTheme(activeProfile.Theme, activeProfile.DisplayMode);
@@ -160,6 +163,7 @@ public partial class App : WpfApplication
         var session = _host.Services.GetRequiredService<AnnotationSession>();
         var hotkeyService = _host.Services.GetRequiredService<GlobalHotkeyService>();
         var mouseHookService = _host.Services.GetRequiredService<GlobalMouseHookService>();
+        var keyboardHookService = _host.Services.GetRequiredService<GlobalKeyboardHookService>();
         var trayService = _host.Services.GetRequiredService<TrayService>();
 
         hotkeyService.HotkeyPressed += (_, _) => Dispatcher.Invoke(ToggleToolbarVisibility);
@@ -172,6 +176,17 @@ public partial class App : WpfApplication
             configService.CurrentConfig.MiddleClickToggleEnabled && _isToolbarVisible;
         mouseHookService.MiddleButtonClicked += (_, _) => session.ToggleCursorMode();
         SyncMouseHookState();
+
+        keyboardHookService.ShouldHandleEscape = () =>
+            GlobalKeyboardHookService.ShouldCaptureEscape(
+                toolbarVisible: _isToolbarVisible,
+                isCursorMode: session.IsCursorMode,
+                isTextInputActive: _overlayManager?.IsInlineTextEditing == true,
+                isPopupOpen: _toolbarWindow?.IsAnyPopupOpen == true,
+                isDialogOpen: _settingsWindow is { IsVisible: true } || _aboutWindow is { IsVisible: true });
+        keyboardHookService.EscapePressed += (_, _) =>
+            Dispatcher.Invoke(() => session.IsCursorMode = true);
+        keyboardHookService.Start();
 
         trayService.ToggleToolbarRequested += (_, _) => Dispatcher.Invoke(ToggleToolbarVisibility);
         trayService.OpenSettingsRequested += (_, _) => Dispatcher.Invoke(OpenSettingsWindow);
@@ -348,6 +363,7 @@ public partial class App : WpfApplication
         {
             _host.Services.GetService<ConfigService>()?.FlushPendingSave();
             _host.Services.GetService<GlobalMouseHookService>()?.Dispose();
+            _host.Services.GetService<GlobalKeyboardHookService>()?.Dispose();
             _host.Services.GetService<GlobalHotkeyService>()?.Dispose();
             _host.Services.GetService<OverlayManager>()?.Dispose();
             _host.Services.GetService<TrayService>()?.Dispose();

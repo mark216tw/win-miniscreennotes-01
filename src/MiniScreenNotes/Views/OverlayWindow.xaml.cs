@@ -85,6 +85,8 @@ public partial class OverlayWindow : Window
 
     public MonitorInfo Monitor { get; }
 
+    public bool IsEditingText => InlineTextBox.Visibility == Visibility.Visible;
+
     public double SpotlightRadius
     {
         get => _spotlightLayer.Radius;

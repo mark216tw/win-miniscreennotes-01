@@ -28,6 +28,8 @@ public sealed class OverlayManager : IDisposable
 
     public bool OverlaysVisible => _overlaysVisible;
 
+    public bool IsInlineTextEditing => _overlays.Any(overlay => overlay.IsEditingText);
+
     public event Action<string>? InfoMessageRequested;
     public event EventHandler? TopMostZOrderRequired;
     public Func<System.Windows.Rect?>? ToolbarBoundsProvider { get; set; }

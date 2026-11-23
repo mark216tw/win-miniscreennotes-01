@@ -1,5 +1,27 @@
 # 開發日誌 (DEV_LOG)
 
+## 2026-11-23 - v1.0.24（修正放大鏡模式 Esc 無法回游標模式）
+
+### 目標
+修正放大鏡模式（及其他非游標工具）在未點擊覆蓋層、鍵盤焦點仍留在其他程式時，按 `Esc` 無法回到游標模式的間歇性問題。
+
+### 變更
+- `Helpers/Win32Interop.cs`：新增 `WH_KEYBOARD_LL`、鍵盤訊息與 `VK_ESCAPE` 常數、`KeyboardHookStruct`、`LowLevelKeyboardProc` 與鍵盤版 `SetWindowsHookEx` P/Invoke。
+- `Services/GlobalKeyboardHookService.cs`（新增）：以全域低階鍵盤掛鉤攔截 `Esc`，`ShouldHandleEscape` 謂詞決定是否處理，處理時吞掉 keydown／keyup 並觸發 `EscapePressed`。
+- `Views/OverlayWindow.xaml.cs`、`Services/OverlayManager.cs`、`Views/ToolbarWindow.xaml.cs`：新增 `IsEditingText`／`IsInlineTextEditing`／`IsAnyPopupOpen` 狀態查詢。
+- `App.xaml.cs`：註冊並啟動 `GlobalKeyboardHookService`，`Esc` 於工具列顯示、非游標模式、無文字輸入／選單／對話框時回到游標模式；離開時釋放。
+- `tests/MiniScreenNotes.Tests/GlobalKeyboardHookServiceTests.cs`（新增）：驗證 `ShouldHandleEscape` 各阻擋條件。
+- 文件與版本：`README.md`、`docs/USER_GUIDE.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`Directory.Build.props`。
+
+### 問題與解法
+- `Esc` 原本僅由 `OverlayWindow`／`ToolbarWindow` 的 `PreviewKeyDown` 處理，需視窗為前景且有鍵盤焦點。以中鍵或全域快捷鍵由游標模式進入放大鏡時，覆蓋層以 `ShowActivated=false` 顯示、放大鏡為 `WS_EX_NOACTIVATE` 且點擊穿透，使用者只移動滑鼠未點擊時焦點仍留在其他程式，`Esc` 因此送不到本程式。
+- 改以 `WH_KEYBOARD_LL` 全域掛鉤處理，不依賴焦點；文字輸入、顏色／線寬選單、設定／關於對話框開啟時仍交由原視窗處理，避免破壞 `Esc` 取消語意。
+
+### 待辦
+- 尚未於實體多螢幕／混合 DPI 環境實測全域掛鉤與輸入法／遠端桌面情境下的 `Esc` 行為。
+
+---
+
 ## 2026-11-23 - v1.0.23（修正放大鏡進場陰影閃現）
 
 ### 目標

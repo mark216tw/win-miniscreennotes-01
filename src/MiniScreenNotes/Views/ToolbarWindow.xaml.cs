@@ -96,6 +96,8 @@ public partial class ToolbarWindow : Window
     public event EventHandler? OpenSettingsRequested;
     public event EventHandler<bool>? PanelVisibilityChanged;
 
+    public bool IsAnyPopupOpen => ColorPopup.IsOpen || StrokePopup.IsOpen;
+
     public void ShowAndRestorePosition()
     {
         if (IsVisible)

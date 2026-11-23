@@ -14,8 +14,14 @@ public static class Win32Interop
 
     public const int WmHotkey = 0x0312;
     public const int WhMouseLl = 14;
+    public const int WhKeyboardLl = 13;
     public const int WmMButtonDown = 0x0207;
     public const int WmMButtonUp = 0x0208;
+    public const int WmKeyDown = 0x0100;
+    public const int WmKeyUp = 0x0101;
+    public const int WmSysKeyDown = 0x0104;
+    public const int WmSysKeyUp = 0x0105;
+    public const int VkEscape = 0x1B;
 
     public const uint ModAlt = 0x0001;
     public const uint ModControl = 0x0002;
@@ -91,11 +97,25 @@ public static class Win32Interop
         public uint Colors;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyboardHookStruct
+    {
+        public uint VirtualKeyCode;
+        public uint ScanCode;
+        public uint Flags;
+        public uint Time;
+        public IntPtr ExtraInfo;
+    }
+
     public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RectStruct lprcMonitor, IntPtr dwData);
     public delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+    public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
