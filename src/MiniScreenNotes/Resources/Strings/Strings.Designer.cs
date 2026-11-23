@@ -50,7 +50,7 @@ public static class Strings
     public static string Background_Blackboard => Get(nameof(Background_Blackboard));
     public static string Toast_Copied => Get(nameof(Toast_Copied));
     public static string Toast_Saved => Get(nameof(Toast_Saved));
-    public static string Toast_StepReset => Get(nameof(Toast_StepReset));
+    public static string Toast_Cleared => Get(nameof(Toast_Cleared));
     public static string Toast_CopyFailed => Get(nameof(Toast_CopyFailed));
     public static string Toast_SaveFailed => Get(nameof(Toast_SaveFailed));
     public static string Toast_HotkeyFailed => Get(nameof(Toast_HotkeyFailed));
@@ -98,7 +98,7 @@ public static class Strings
     public static string About_Shortcut_ConfirmText => Get(nameof(About_Shortcut_ConfirmText));
     public static string About_Shortcut_Magnifier => Get(nameof(About_Shortcut_Magnifier));
     public static string About_Shortcut_Spotlight => Get(nameof(About_Shortcut_Spotlight));
-    public static string About_Shortcut_StepNumber => Get(nameof(About_Shortcut_StepNumber));
+    public static string About_Shortcut_RightClickClear => Get(nameof(About_Shortcut_RightClickClear));
     public static string About_VersionFormat => Get(nameof(About_VersionFormat));
     public static string About_FileVersionFormat => Get(nameof(About_FileVersionFormat));
     public static string About_LicenseFormat => Get(nameof(About_LicenseFormat));

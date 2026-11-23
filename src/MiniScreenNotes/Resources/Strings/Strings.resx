@@ -47,7 +47,7 @@
   <data name="Background_Blackboard" xml:space="preserve"><value>黑板</value></data>
   <data name="Toast_Copied" xml:space="preserve"><value>已複製螢幕標註到剪貼簿</value></data>
   <data name="Toast_Saved" xml:space="preserve"><value>已儲存至：</value></data>
-  <data name="Toast_StepReset" xml:space="preserve"><value>步驟編號已重設為 1</value></data>
+  <data name="Toast_Cleared" xml:space="preserve"><value>已清空所有標註</value></data>
   <data name="Toast_CopyFailed" xml:space="preserve"><value>複製到剪貼簿失敗，請稍後再試</value></data>
   <data name="Toast_SaveFailed" xml:space="preserve"><value>儲存失敗，請確認資料夾權限與磁碟空間</value></data>
   <data name="Toast_HotkeyFailed" xml:space="preserve"><value>全域快捷鍵註冊失敗，可能已被其他程式占用，請至設定變更</value></data>
@@ -69,7 +69,7 @@
   <data name="Hotkey_ApplyFailed" xml:space="preserve"><value>此快捷鍵已被其他應用程式佔用，請改選其他組合。</value></data>
   <data name="Hotkey_ApplyFailedOldKept" xml:space="preserve"><value>此快捷鍵已被其他應用程式佔用；已保留原本的快捷鍵。</value></data>
   <data name="Settings_MiddleClickToggle" xml:space="preserve"><value>面板顯示時，以滑鼠中鍵切換游標模式</value></data>
-  <data name="Tooltip_StepNumberHint" xml:space="preserve"><value>（右鍵可重設編號）</value></data>
+  <data name="Tooltip_StepNumberHint" xml:space="preserve"><value>（右鍵清空所有標註）</value></data>
   <data name="Tooltip_AnnotationsVisible" xml:space="preserve"><value>標註目前顯示，點擊可隱藏</value></data>
   <data name="Tooltip_AnnotationsHidden" xml:space="preserve"><value>標註目前隱藏，點擊可顯示</value></data>
   <data name="HexColor_Invalid" xml:space="preserve"><value>色碼格式不正確，請輸入例如 #EF4444</value></data>
@@ -95,7 +95,7 @@
   <data name="About_Shortcut_ConfirmText" xml:space="preserve"><value>確認文字輸入；Esc 取消</value></data>
   <data name="About_Shortcut_Magnifier" xml:space="preserve"><value>放大鏡：滾輪調整倍率；Ctrl+滾輪調整鏡頭直徑</value></data>
   <data name="About_Shortcut_Spotlight" xml:space="preserve"><value>聚光燈：滾輪調整光圈半徑</value></data>
-  <data name="About_Shortcut_StepNumber" xml:space="preserve"><value>步驟編號：右鍵重設編號</value></data>
+  <data name="About_Shortcut_RightClickClear" xml:space="preserve"><value>標註模式：右鍵清空所有標註（可 Ctrl+Z 復原）</value></data>
   <data name="About_VersionFormat" xml:space="preserve"><value>版本：{0}</value></data>
   <data name="About_FileVersionFormat" xml:space="preserve"><value>檔案版本：{0}</value></data>
   <data name="About_LicenseFormat" xml:space="preserve"><value>授權條款：{0}</value></data>

@@ -72,7 +72,7 @@ public partial class AboutWindow : Window
         new("Ctrl+Enter", Strings.About_Shortcut_ConfirmText),
         new(Strings.About_Key_WheelCtrl, Strings.About_Shortcut_Magnifier),
         new(Strings.About_Key_Wheel, Strings.About_Shortcut_Spotlight),
-        new(Strings.About_Key_RightMouse, Strings.About_Shortcut_StepNumber)
+        new(Strings.About_Key_RightMouse, Strings.About_Shortcut_RightClickClear)
     ];
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)

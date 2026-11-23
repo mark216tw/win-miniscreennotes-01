@@ -17,7 +17,7 @@ public sealed class OverlayManager : IDisposable
     private ToolType? _lastAppliedTopMostTool;
     private double _spotlightRadius = 140.0;
     private double _magnifierZoom = 2.5;
-    private double _magnifierDiameter = 300.0;
+    private double _magnifierDiameter = 280.0;
 
     public OverlayManager(AnnotationSession session)
     {
@@ -81,7 +81,7 @@ public sealed class OverlayManager : IDisposable
             overlay.MagnifierWheelDelta += OnMagnifierWheelDelta;
             overlay.MagnifierSizeWheelDelta += OnMagnifierSizeWheelDelta;
             overlay.SpotlightRadiusChanged += OnSpotlightRadiusChanged;
-            overlay.StepCounterResetRequested += () => InfoMessageRequested?.Invoke(Strings.Toast_StepReset);
+            overlay.AnnotationsCleared += () => InfoMessageRequested?.Invoke(Strings.Toast_Cleared);
             overlay.OverlayActivated += (_, _) => EnsureTopMostZOrder();
             overlay.Show();
             overlay.RefreshMonitorBounds();

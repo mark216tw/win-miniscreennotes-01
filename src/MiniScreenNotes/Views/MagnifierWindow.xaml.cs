@@ -16,7 +16,7 @@ public partial class MagnifierWindow : Window
     private const double MaxZoom = 10.0;
     private const double MinLensDipDiameter = 200.0;
     private const double MaxLensDipDiameter = 500.0;
-    private const double DefaultLensDipDiameter = 300.0;
+    private const double DefaultLensDipDiameter = 280.0;
     private const double BorderThicknessDip = 3.0;
     private const double ShadowPaddingDip = 18.0;
     private const int MinFrameIntervalMs = 16;

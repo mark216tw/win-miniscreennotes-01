@@ -1,13 +1,13 @@
-# mini螢幕筆記 v1.0.24 發行說明
+# mini螢幕筆記 v1.0.26 發行說明
 
-歡迎使用 **mini螢幕筆記** v1.0.24！
+歡迎使用 **mini螢幕筆記** v1.0.26！
 
 ## 下載
 
 | 平台 | 檔案 |
 | --- | --- |
-| x64（Intel／AMD） | `MiniScreenNotes-v1.0.24-win-x64.zip` |
-| ARM64（Windows on ARM） | `MiniScreenNotes-v1.0.24-win-arm64.zip` |
+| x64（Intel／AMD） | `MiniScreenNotes-v1.0.26-win-x64.zip` |
+| ARM64（Windows on ARM） | `MiniScreenNotes-v1.0.26-win-arm64.zip` |
 
 本版本提供**非 Self-Contained** 壓縮檔，不提供安裝程式。解壓縮後直接執行 `MiniScreenNotes.exe`。
 
@@ -23,6 +23,8 @@
 
 ## 本版重點
 
+- 放大鏡預設直徑由 `300` DIP 調整為 `280` DIP，與聚光燈預設直徑一致，視覺比例更協調。
+- 新增：標註模式下於任一螢幕按滑鼠右鍵即可一次清空所有標註（可 `Ctrl+Z` 復原），步驟編號也會同步重設。
 - 修正放大鏡模式（及其他非游標工具）在未點擊畫面、鍵盤焦點仍在其他程式時，按 `Esc` 無法回到游標模式的問題；現在不論焦點在哪都能以 `Esc` 回到游標模式。
 - 修正以滑鼠中鍵由游標模式切換到放大鏡時，鏡頭陰影會先在畫面其他位置閃現後才消失的問題；現在進入放大鏡立即出現在游標位置。
 - 顯著提升應用程式啟動速度：改用輕量 Host 建置器、JSON 原始碼產生器、Multicore JIT 預熱，並延後建立非立即需要的視窗與背景服務。

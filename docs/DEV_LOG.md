@@ -1,5 +1,44 @@
 # 開發日誌 (DEV_LOG)
 
+## 2026-11-23 - v1.0.26（放大鏡預設直徑對齊聚光燈）
+
+### 目標
+讓放大鏡預設圓圈直徑與聚光燈一致，避免兩者切換時視覺比例不一致。
+
+### 變更
+- `Views/MagnifierWindow.xaml.cs`：`DefaultLensDipDiameter` 由 `300` DIP 改為 `280` DIP（聚光燈預設直徑為 280 DIP）。
+- `Services/OverlayManager.cs`：`_magnifierDiameter` 初始值同步改為 `280`，確保釋放後重建仍沿用新預設。
+- 文件與版本：`CHANGELOG.md`、`RELEASE_NOTES.md`、`Directory.Build.props`。
+
+### 問題與解法
+- 放大鏡直徑另存於 `OverlayManager` 欄位，若只改視窗常數，關閉再開啟時仍會沿用舊值，因此兩處須同時調整。
+
+### 待辦
+- 需實機確認混合 DPI 下 280 DIP 的擷取範圍與邊框比例正常。
+
+---
+
+## 2026-11-23 - v1.0.25（標註模式右鍵清空標註）
+
+### 目標
+在標註模式下按滑鼠右鍵即可一次清空所有螢幕的標註，並保留復原能力。
+
+### 變更
+- `Views/Controls/AnnotationCanvas.cs`：右鍵改為游標模式／拖曳中忽略，其餘情況呼叫 `AnnotationSession.ClearAll()`，並以 `AnnotationsCleared` 事件通知清空。
+- `Views/OverlayWindow.xaml.cs`、`Services/OverlayManager.cs`：事件由 `StepCounterResetRequested` 改為 `AnnotationsCleared`，並以 Toast 顯示「已清空所有標註」。
+- `Services/AnnotationSession.cs`：移除不再使用的 `ResetStepCounter()`。
+- `Resources/Strings`、`Views/AboutWindow.xaml.cs`：更新右鍵與步驟編號提示文字。
+- 文件與版本：`README.md`、`docs/USER_GUIDE.md`、`docs/ARCHITECTURE.md`、`CHANGELOG.md`、`RELEASE_NOTES.md`、`Directory.Build.props`。
+
+### 問題與解法
+- 原本右鍵僅在步驟編號工具重設編號；改為所有標註工具皆可清空後，移除專屬重設事件，避免重複語意與無效提示。
+- 清空沿用 `ClearAll()` 的 `ClearAnnotationsAction`，因此 `Ctrl+Z` 可完整復原，不需新增復原邏輯。
+
+### 待辦
+- 需實機驗證多螢幕、混合 DPI 下的右鍵清空與復原。
+
+---
+
 ## 2026-11-23 - v1.0.24（修正放大鏡模式 Esc 無法回游標模式）
 
 ### 目標

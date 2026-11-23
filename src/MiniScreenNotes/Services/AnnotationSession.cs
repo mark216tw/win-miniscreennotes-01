@@ -249,12 +249,6 @@ public sealed class AnnotationSession
         NotifyAllChanged();
     }
 
-    public void ResetStepCounter()
-    {
-        _stepCounter = 1;
-        StateChanged?.Invoke(this, EventArgs.Empty);
-    }
-
     public void CycleBackgroundMode()
     {
         BackgroundMode = BackgroundMode switch

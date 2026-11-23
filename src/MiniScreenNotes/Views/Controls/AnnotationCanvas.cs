@@ -43,7 +43,7 @@ public sealed class AnnotationCanvas : FrameworkElement
     }
 
     public event Action<Point>? TextInputRequested;
-    public event Action? StepCounterReset;
+    public event Action? AnnotationsCleared;
 
     public void Detach()
     {
@@ -197,12 +197,23 @@ public sealed class AnnotationCanvas : FrameworkElement
     {
         base.OnMouseRightButtonDown(e);
 
-        if (_session.CurrentTool == ToolType.StepNumber)
+        if (_session.IsCursorMode || _isDragging)
         {
-            _session.ResetStepCounter();
-            StepCounterReset?.Invoke();
-            e.Handled = true;
+            return;
         }
+
+        var hadElements = _session.Elements.Count > 0;
+        CommitErasedBatch();
+        _erasedBatch.Clear();
+        _activeElement = null;
+        _session.ClearAll();
+
+        if (hadElements)
+        {
+            AnnotationsCleared?.Invoke();
+        }
+
+        e.Handled = true;
     }
 
     protected override void OnMouseMove(WpfMouseEventArgs e)

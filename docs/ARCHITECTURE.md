@@ -208,6 +208,7 @@ public interface IAnnotationElement
 - `IsCursorMode` 與 `SelectedAnnotationTool` 分開保存。
 - 關閉游標模式時會恢復原本選取的標註工具。
 - 滑鼠中鍵切換只改變 `IsCursorMode`，不覆寫工具選取。
+- 標註模式下於任一螢幕畫布按滑鼠右鍵會呼叫 `ClearAll`，一次清空所有螢幕的標註並重設步驟編號，可藉 Undo 復原。
 
 ### Undo／Redo
 

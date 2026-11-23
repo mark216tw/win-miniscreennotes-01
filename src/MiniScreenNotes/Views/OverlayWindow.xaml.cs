@@ -50,7 +50,7 @@ public partial class OverlayWindow : Window
 
         _canvas = new AnnotationCanvas(session, monitor.DeviceName);
         _canvas.TextInputRequested += BeginInlineTextInput;
-        _canvas.StepCounterReset += () => StepCounterResetRequested?.Invoke();
+        _canvas.AnnotationsCleared += () => AnnotationsCleared?.Invoke();
 
         _laserLayer = new LaserOverlayLayer();
         _spotlightLayer = new SpotlightOverlayLayer();
@@ -96,7 +96,7 @@ public partial class OverlayWindow : Window
     public event Action<int>? MagnifierWheelDelta;
     public event Action<int>? MagnifierSizeWheelDelta;
     public event Action<double>? SpotlightRadiusChanged;
-    public event Action? StepCounterResetRequested;
+    public event Action? AnnotationsCleared;
     public event EventHandler? OverlayActivated;
 
     protected override void OnClosed(EventArgs e)
